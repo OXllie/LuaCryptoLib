@@ -84,8 +84,42 @@ function module.base64Encode(str)
 			)
 		end
 	end
-	
+  -- Add linebreaks every 76 characters in line with RFC 2045
+  for i = 76, base64:len(), 76 do
+    base64 = base64:sub(1, i) .. "\n" .. base64:sub(i+1,base64:len())
+  end
+
 	return base64
+end
+
+-- In order to index Base64 values the table is inverted (e.g from 1 = A to A = 1)
+local base64IndexValues = {}
+for i,v in pairs(base64Values) do
+  base64IndexValues[v] = i
+end
+function module.base64Decode(base64)
+  assert(type(base64) == "string", "Base64 must be quotable for decoding")
+  -- Convert quotable base64 back to binary string
+  local blob = ""
+  for i = 1, base64:len() do
+    local char = base64:sub(i,i)
+    if base64IndexValues[char] then
+      -- Num to binary returns 8 bits, need 6.
+      blob = blob .. module.numToBinary(base64IndexValues[char]-1):sub(3,8)
+    end
+  end
+  -- Convert bytes to integers
+  local numArray = {}
+  for i = 1, blob:len(), 8 do
+    numArray[#numArray+1] = module.binaryToNum(blob:sub(i, i+7))
+  end
+  -- Convert integers to characters
+  local str = ""
+  for i,v in pairs(numArray) do
+    str = str .. string.char(v)
+  end
+
+  return str
 end
 
 return module
