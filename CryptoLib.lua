@@ -150,22 +150,22 @@ end
 
 -- Define internal sha2 functions
 function ch(x, y, z)
-	return (x & y) ~ (~x & z)
+	return bit32.bxor(bit32.band(x,y),bit32.band(bit32.bnot(x),z))
 end
 function maj(x, y, z)
-	return (x & y) ~ (x & z) ~ (y & z)
+	return bit32.bxor(bit32.bxor(bit32.band(x,y),bit32.band(x,z)),bit32.band(y,z))
 end
 function bsig0(x)
-	return bit32.rrotate(x, 2) ~ bit32.rrotate(x, 13) ~ bit32.rrotate(x, 22)
+	return bit32.bxor(bit32.bxor(bit32.rrotate(x, 2),bit32.rrotate(x, 13)),bit32.rrotate(x, 22))
 end
 function bsig1(x)
-	return bit32.rrotate(x, 6) ~ bit32.rrotate(x, 11) ~ bit32.rrotate(x, 25)
+	return bit32.bxor(bit32.bxor(bit32.rrotate(x, 6),bit32.rrotate(x, 11)),bit32.rrotate(x, 25))
 end
 function ssig0(x)
-	return bit32.rrotate(x, 7) ~ bit32.rrotate(x, 18) ~ bit32.rshift(x, 3)
+	return bit32.bxor(bit32.bxor(bit32.rrotate(x, 7),bit32.rrotate(x, 18)),bit32.rshift(x, 3))
 end
 function ssig1(x)
-	return bit32.rrotate(x, 17) ~ bit32.rrotate(x, 19) ~ bit32.rshift(x, 10)
+	return bit32.bxor(bit32.bxor(bit32.rrotate(x, 17),bit32.rrotate(x, 19)),bit32.rshift(x, 10))
 end
 -- Define constants K[1..64]
 local K = {
