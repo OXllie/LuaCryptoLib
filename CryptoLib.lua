@@ -188,10 +188,9 @@ local K = {
 }
 function module.sha256(str)
 	-- Generate bit length and string
-	local L = 0
+	local L = str:len() * 8
 	local bitString = ""
 	for i = 1,str:len() do
-		L = L + 8
 		bitString = bitString .. module.numToBinary(str:byte(i))
 	end
 	-- If str == "" then hash for 0 bit length (this satisfies a test vector)
@@ -274,6 +273,93 @@ function module.sha256(str)
 	end
 
 	return result
+end
+
+function module.sha1(str)
+	-- Initial variables
+	local h0 = 0x67452301
+	local h1 = 0xEFCDAB89
+	local h2 = 0x98BADCFE
+	local h3 = 0x10325476
+	local h4 = 0xC3D2E1F0
+	-- Message length in bits
+	local ml = str:len()*8
+	local bitString = ""
+	for i = 1,str:len() do
+		bitString = bitString .. module.numToBinary(str:byte(i))
+	end
+	-- If str == "" then hash for 0 bit length (this satisfies a test vector)
+	bitString = bitString == "" and "1"..string.rep("0",511) or bitString
+
+	-- Pad bitString so the length is a multiple of 512
+	if bitString:len() % 512 ~= 0 then
+		bitString = bitString .. "1" 
+		.. string.rep("0", (448 - ((ml + 1) % 512)) % 512)
+		.. module.numToBinary(ml, 64)
+	end
+
+	-- Split bitString into blocks of 512 bits
+	local blocks = {}
+	for i = 1, bitString:len(), 512 do
+		blocks[#blocks + 1] = bitString:sub(i, i+511)
+	end
+	
+	for i = 1,#blocks do
+		-- Break blocks into 16 32bit words
+		local W = {}
+		for t = 0, 15 do
+			W[t+1] = module.binaryToNum(blocks[i]:sub((t*32)+1,((t*32)+1)+31)) 
+		end
+		-- Extend message schedule
+		for t = 17, 80 do
+			W[t] = bit32.lrotate(bit32.bxor(bit32.bxor(bit32.bxor(W[t-3], W[t-8]), W[t-14]), W[t-16]), 1)
+		end
+		
+		local a = h0
+		local b = h1
+		local c = h2
+		local d = h3
+		local e = h4
+		
+		for i = 1, 80 do
+			local f
+			local k
+			
+			if i <= 20 then
+				f = bit32.bor(bit32.band(b, c), bit32.band(bit32.bnot(b), d))
+				k = 0x5A827999
+			elseif i <= 40 then
+				f = bit32.bxor(bit32.bxor(b, c), d)
+				k = 0x6ED9EBA1
+			elseif i <= 60 then
+				f = bit32.bor(bit32.bor(bit32.band(b, c), bit32.band(b, d)), bit32.band(c, d)) 
+				k = 0x8F1BBCDC
+			elseif i <= 80 then
+				f = bit32.bxor(bit32.bxor(b, c), d)
+				k = 0xCA62C1D6
+			end
+			
+			local T1 = (bit32.lrotate(a, 5) + f + e + k + W[i]) % 2^32
+			e = d
+			d = c
+	        c = bit32.lrotate(b, 30)
+	        b = a
+	        a = T1			
+		end
+		
+		h0 = (h0 + a) % 2^32
+		h1 = (h1 + b) % 2^32
+		h2 = (h2 + c) % 2^32
+		h3 = (h3 + d) % 2^32
+		h4 = (h4 + e) % 2^32
+	end
+	
+	return 
+		module.binaryToHex(module.numToBinary(h0, 32))..
+		module.binaryToHex(module.numToBinary(h1, 32))..
+		module.binaryToHex(module.numToBinary(h2, 32))..
+		module.binaryToHex(module.numToBinary(h3, 32))..
+		module.binaryToHex(module.numToBinary(h4, 32))
 end
 
 return module
