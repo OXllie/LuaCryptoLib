@@ -355,11 +355,11 @@ function module.sha1(str)
 	end
 	
 	return 
-		module.binaryToHex(module.numToBinary(h0, 32))..
-		module.binaryToHex(module.numToBinary(h1, 32))..
-		module.binaryToHex(module.numToBinary(h2, 32))..
-		module.binaryToHex(module.numToBinary(h3, 32))..
-		module.binaryToHex(module.numToBinary(h4, 32))
+		module.binaryToHex(module.numToBinary(h0, 32), false)..
+		module.binaryToHex(module.numToBinary(h1, 32), false)..
+		module.binaryToHex(module.numToBinary(h2, 32), false)..
+		module.binaryToHex(module.numToBinary(h3, 32), false)..
+		module.binaryToHex(module.numToBinary(h4, 32), false)
 end
 
 return module
