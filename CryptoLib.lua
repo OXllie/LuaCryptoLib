@@ -1,16 +1,19 @@
 local module = {}
 
+-- every value up to 64 bits worth
+local binValues = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728, 268435456, 536870912, 1073741824, 2147483648, 4294967296, 8589934592, 17179869184, 34359738368, 68719476736, 137438953472, 274877906944, 549755813888, 1099511627776, 2199023255552, 4398046511104, 8796093022208, 17592186044416, 35184372088832, 70368744177664, 1.4073748835533e+14, 2.8147497671066e+14, 5.6294995342131e+14, 1.1258999068426e+15, 2.2517998136852e+15, 4.5035996273705e+15, 9.007199254741e+15, 1.8014398509482e+16, 3.6028797018964e+16, 7.2057594037928e+16, 1.4411518807586e+17, 2.8823037615171e+17, 5.7646075230342e+17, 1.1529215046068e+18, 2.3058430092137e+18, 4.6116860184274e+18, 9.2233720368548e+18}
+local commonBinary = {"00000000", "00000001", "00000010", "00000011", "00000100", "00000101", "00000110", "00000111", "00001000", "00001001", "00001010", "00001011", "00001100", "00001101", "00001110", "00001111", "00010000", "00010001", "00010010", "00010011", "00010100", "00010101", "00010110", "00010111", "00011000", "00011001", "00011010", "00011011", "00011100", "00011101", "00011110", "00011111", "00100000", "00100001", "00100010", "00100011", "00100100", "00100101", "00100110", "00100111", "00101000", "00101001", "00101010", "00101011", "00101100", "00101101", "00101110", "00101111", "00110000", "00110001", "00110010", "00110011", "00110100", "00110101", "00110110", "00110111", "00111000", "00111001", "00111010", "00111011", "00111100", "00111101", "00111110", "00111111", "01000000", "01000001", "01000010", "01000011", "01000100", "01000101", "01000110", "01000111", "01001000", "01001001", "01001010", "01001011", "01001100", "01001101", "01001110", "01001111", "01010000", "01010001", "01010010", "01010011", "01010100", "01010101", "01010110", "01010111", "01011000", "01011001", "01011010", "01011011", "01011100", "01011101", "01011110", "01011111", "01100000", "01100001", "01100010", "01100011", "01100100", "01100101", "01100110", "01100111", "01101000", "01101001", "01101010", "01101011", "01101100", "01101101", "01101110", "01101111", "01110000", "01110001", "01110010", "01110011", "01110100", "01110101", "01110110", "01110111", "01111000", "01111001", "01111010", "01111011", "01111100", "01111101", "01111110", "01111111", "10000000", "10000001", "10000010", "10000011", "10000100", "10000101", "10000110", "10000111", "10001000", "10001001", "10001010", "10001011", "10001100", "10001101", "10001110", "10001111", "10010000", "10010001", "10010010", "10010011", "10010100", "10010101", "10010110", "10010111", "10011000", "10011001", "10011010", "10011011", "10011100", "10011101", "10011110", "10011111", "10100000", "10100001", "10100010", "10100011", "10100100", "10100101", "10100110", "10100111", "10101000", "10101001", "10101010", "10101011", "10101100", "10101101", "10101110", "10101111", "10110000", "10110001", "10110010", "10110011", "10110100", "10110101", "10110110", "10110111", "10111000", "10111001", "10111010", "10111011", "10111100", "10111101", "10111110", "10111111", "11000000", "11000001", "11000010", "11000011", "11000100", "11000101", "11000110", "11000111", "11001000", "11001001", "11001010", "11001011", "11001100", "11001101", "11001110", "11001111", "11010000", "11010001", "11010010", "11010011", "11010100", "11010101", "11010110", "11010111", "11011000", "11011001", "11011010", "11011011", "11011100", "11011101", "11011110", "11011111", "11100000", "11100001", "11100010", "11100011", "11100100", "11100101", "11100110", "11100111", "11101000", "11101001", "11101010", "11101011", "11101100", "11101101", "11101110", "11101111", "11110000", "11110001", "11110010", "11110011", "11110100", "11110101", "11110110", "11110111", "11111000", "11111001", "11111010", "11111011", "11111100", "11111101", "11111110", "11111111"}
 function module.numToBinary(int, width)
 	local width = width or 8
-	local binValues = {128,64,32,16,8,4,2,1}
-	if width > 8 then
-		for i = 8, width - 1 do
-			table.insert(binValues, 1, 2^i)
+	if width > 64 then
+		for i = 64, width - 1 do
+			binValues[#binValues+1] = 2^i
 		end
 	end
-	assert(int < 2^width, string.format("int value out of range for %s bit width", width))
+	--assert(int < 2^width, string.format("int value out of range for %s bit width", width))
 	local value = ""
-	for _,v in pairs(binValues) do
+	for i = width, 1, -1 do
+		local v = binValues[i]
 		if int >= v then
 			value = value.."1"
 			int = int - v
@@ -24,21 +27,15 @@ end
 function module.binaryToNum(str)
 	local len = str:len()
 	-- Generate binary values for the width given
-	local binValues = {128,64,32,16,8,4,2,1}
-	if len > 8 then
-		for i = 8, len - 1 do
-			table.insert(binValues, 1, 2^i)
-		end
-	else
-		for i = 1,8 - len do
-			table.remove(binValues, 1)
+	if len > 64 then
+		for i = 64, len - 1 do
+			binValues[#binValues+1] = 2^i
 		end
 	end
-
 	local int = 0
-	for i,v in pairs(binValues) do
-		if str:sub(i,i) == "1" then
-			int = int + v
+	for i = 1, len do
+		if str:sub(i, i) == "1" then
+			int = int + binValues[len - (i-1)]
 		end
 	end
 	return int
@@ -188,9 +185,10 @@ local K = {
 }
 function module.sha256(str)
 	-- Generate bit length and string
-	local L = str:len() * 8
+	local len = str:len()
+	local L = len * 8
 	local bitString = ""
-	for i = 1,str:len() do
+	for i = 1,len do
 		bitString = bitString .. module.numToBinary(str:byte(i))
 	end
 	-- If str == "" then hash for 0 bit length (this satisfies a test vector)
@@ -198,14 +196,16 @@ function module.sha256(str)
 
 	-- Pad bitString so the length is a multiple of 512
 	if bitString:len() % 512 ~= 0 then
+		local pad = (448 - ((L + 1) % 512)) % 512
 		bitString = bitString .. "1" 
-		.. string.rep("0", (448 - ((L + 1) % 512)) % 512)
+		.. string.rep("0", pad)
 		.. module.numToBinary(L, 64)
+		L = L + pad + 65
 	end
 
 	-- Split bitString into blocks of 512 bits
 	local blocks = {}
-	for i = 1, bitString:len(), 512 do
+	for i = 1, L, 512 do
 		blocks[#blocks + 1] = bitString:sub(i, i+511)
 	end
 
@@ -226,10 +226,10 @@ function module.sha256(str)
 		-- Initialise message schedule W[1..64] for block
 		local W = {}
 		for t = 0, 15 do
-			W[t+1] = module.binaryToNum(blocks[i]:sub((t*32)+1,((t*32)+1)+31))
+			W[t+1] = module.binaryToNum(blocks[i]:sub((t*32)+1,(t*32)+32))
 		end
 		for t = 17, 64 do
-			W[t] = (ssig1(W[t-2]) + W[t-7] + ssig0(W[t-15]) + W[t-16]) % 2^32
+			W[t] = (ssig1(W[t-2]) + W[t-7] + ssig0(W[t-15]) + W[t-16]) % 4294967296
 		end
 
 		-- Define working variables
@@ -243,27 +243,27 @@ function module.sha256(str)
 		local h = H[8]
 
 		for t = 1, 64 do
-			local T1 = (h + bsig1(e) + ch(e, f, g) + K[t] + W[t]) % 2^32
-			local T2 = (bsig0(a) + maj(a, b, c)) % 2^32
+			local T1 = (h + bsig1(e) + ch(e, f, g) + K[t] + W[t]) % 4294967296
+			local T2 = (bsig0(a) + maj(a, b, c)) % 4294967296
 			h = g
 			g = f
 			f = e
-			e = (d + T1) % 2^32
+			e = (d + T1) % 4294967296
 			d = c
 			c = b
 			b = a
-			a = (T1 + T2) % 2^32
+			a = (T1 + T2) % 4294967296
 		end
 
 		-- Add working variables to the hash value table
-		H[1] = (a + H[1]) % 2^32
-		H[2] = (b + H[2]) % 2^32
-		H[3] = (c + H[3]) % 2^32
-		H[4] = (d + H[4]) % 2^32
-		H[5] = (e + H[5]) % 2^32
-		H[6] = (f + H[6]) % 2^32
-		H[7] = (g + H[7]) % 2^32
-		H[8] = (h + H[8]) % 2^32
+		H[1] = (a + H[1]) % 4294967296
+		H[2] = (b + H[2]) % 4294967296
+		H[3] = (c + H[3]) % 4294967296
+		H[4] = (d + H[4]) % 4294967296
+		H[5] = (e + H[5]) % 4294967296
+		H[6] = (f + H[6]) % 4294967296
+		H[7] = (g + H[7]) % 4294967296
+		H[8] = (h + H[8]) % 4294967296
 	end
 
 	-- Produce result as hex string
@@ -283,32 +283,38 @@ function module.sha1(str)
 	local h3 = 0x10325476
 	local h4 = 0xC3D2E1F0
 	-- Message length in bits
-	local ml = str:len()*8
+	local len = str:len()
+	local ml = len * 8
 	local bitString = ""
-	for i = 1,str:len() do
-		bitString = bitString .. module.numToBinary(str:byte(i))
+	for i = 1, len do
+		bitString = bitString .. commonBinary[str:byte(i)+1]
 	end
 	-- If str == "" then hash for 0 bit length (this satisfies a test vector)
-	bitString = bitString == "" and "1"..string.rep("0",511) or bitString
-
-	-- Pad bitString so the length is a multiple of 512
-	if bitString:len() % 512 ~= 0 then
-		bitString = bitString .. "1" 
-		.. string.rep("0", (448 - ((ml + 1) % 512)) % 512)
-		.. module.numToBinary(ml, 64)
-	end
-
-	-- Split bitString into blocks of 512 bits
-	local blocks = {}
-	for i = 1, bitString:len(), 512 do
-		blocks[#blocks + 1] = bitString:sub(i, i+511)
+	if bitString == "" then
+		bitString = "1"..string.rep("0",511)
+		ml = 512
 	end
 	
+	-- Pad bitString so the length is a multiple of 512
+	if ml % 512 ~= 0 then
+		local pad = (448 - ((ml + 1) % 512)) % 512
+		bitString = bitString .. "1" 
+		.. string.rep("0", pad)
+		.. module.numToBinary(ml, 64)
+		ml = ml + pad + 65
+	end
+	
+	-- Split bitString into blocks of 512 bits
+	local blocks = {}
+	for i = 1, ml, 512 do
+		blocks[#blocks + 1] = bitString:sub(i, i+511)
+	end
+
 	for i = 1,#blocks do
 		-- Break blocks into 16 32bit words
 		local W = {}
 		for t = 0, 15 do
-			W[t+1] = module.binaryToNum(blocks[i]:sub((t*32)+1,((t*32)+1)+31)) 
+			W[t+1] = module.binaryToNum(blocks[i]:sub((t*32)+1,(t*32)+32)) 
 		end
 		-- Extend message schedule
 		for t = 17, 80 do
@@ -339,7 +345,7 @@ function module.sha1(str)
 				k = 0xCA62C1D6
 			end
 			
-			local T1 = (bit32.lrotate(a, 5) + f + e + k + W[i]) % 2^32
+			local T1 = (bit32.lrotate(a, 5) + f + e + k + W[i]) % 4294967296
 			e = d
 			d = c
 	        c = bit32.lrotate(b, 30)
@@ -347,11 +353,11 @@ function module.sha1(str)
 	        a = T1			
 		end
 		
-		h0 = (h0 + a) % 2^32
-		h1 = (h1 + b) % 2^32
-		h2 = (h2 + c) % 2^32
-		h3 = (h3 + d) % 2^32
-		h4 = (h4 + e) % 2^32
+		h0 = (h0 + a) % 4294967296
+		h1 = (h1 + b) % 4294967296
+		h2 = (h2 + c) % 4294967296
+		h3 = (h3 + d) % 4294967296
+		h4 = (h4 + e) % 4294967296
 	end
 	
 	return 
